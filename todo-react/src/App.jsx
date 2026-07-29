@@ -3,7 +3,6 @@ import './index.scss';
 import TodoContext from './Todo context';
 
 import AddTodoForm from './components/Add-todo-form';
-import TodosContainer from './components/Todos-container';
 import Input from './components/Input';
 import Button from './components/Button';
 import TodoItem from './components/TodoItem';
@@ -19,6 +18,7 @@ const todosActions = (state, action) => {
     case 'DELETE_ALL': { return []; };
     case 'SWITCH_COMPLETE_TODO': { return state.map(todo => todo.id === id ? { ...todo, isDone: !todo.isDone } : todo) };
     case 'EDIT': { return state.map(todo => todo.id === id ? { ...todo, title } : todo) }
+    case 'SWITCH_FAVORITE': { return state.map(todo => todo.id === id ? { ...todo, isFav: !todo.isFav } : todo) }
     default: return state;
   }
 }
@@ -57,7 +57,7 @@ const App = () => {
   const onConfirmEditTodo = (e) => {
     e.preventDefault();
 
-    if(!editTodoNewTitle.trim()) return;
+    if (!editTodoNewTitle.trim()) return;
 
     dispatchTodos({ type: 'EDIT', id: editTodoId, title: editTodoNewTitle })
     setEditTodoId(null);
@@ -78,9 +78,11 @@ const App = () => {
   }
 
   const todosLng = todos.length;
-  const todosForRender = searchTxt.trim()
-    ? todos.filter(todo => todo.title.toLowerCase().includes(searchTxt))
-    : todos
+  const todosForRender = (
+    searchTxt.trim()
+      ? todos.filter(todo => todo.title.toLowerCase().includes(searchTxt))
+      : todos
+  ).sort((a,b) => +b.isFav - +a.isFav);
 
   const firstIncompleteTodoId = todos.find(todo => !todo.isDone)?.id;
 
@@ -88,6 +90,7 @@ const App = () => {
     <TodoContext.Provider value={valueForContext}>
       <div className="todo-wrap">
         <AddTodoForm onSubmit={onAddTodo} />
+
         <Input
           placeholder='Search todos...'
           className="search-todo-input"
@@ -95,25 +98,29 @@ const App = () => {
           value={searchTxt}
           limit={20}
         />
+
         <TodosInfo todos={todos} />
+
         <Button className="delete-all-btn" onClick={() => {
           if (confirm('Delete all todos?')) dispatchTodos({ type: 'DELETE_ALL' });
         }}>DELETE ALL</Button>
-        <TodosContainer>
+
+        <div className="todos-container">
           {!editTodoId
             ? <ul>
               {
                 todosForRender.length
                   ? todosForRender.map(todo =>
-                  <TodoItem key={todo.id}
-                    title={todo.title}
-                    onDelete={() => dispatchTodos({ type: 'DELETE', id: todo.id })}
-                    id={todo.id}
-                    switchComplete={() => dispatchTodos({ type: 'SWITCH_COMPLETE_TODO', id: todo.id })}
-                    checked={todo.isDone ?? false}
-                    isFirstIncomplete={!!(firstIncompleteTodoId && todo.id === firstIncompleteTodoId)}
-                    setEditTodoId={setEditTodoId}
-                  />)
+                    <TodoItem key={todo.id}
+                      className={todo.isFav ? 'fav-todo' : ''}
+                      title={todo.title}
+                      onDelete={() => dispatchTodos({ type: 'DELETE', id: todo.id })}
+                      id={todo.id}
+                      switchComplete={() => dispatchTodos({ type: 'SWITCH_COMPLETE_TODO', id: todo.id })}
+                      checked={todo.isDone ?? false}
+                      isFirstIncomplete={!!(firstIncompleteTodoId && todo.id === firstIncompleteTodoId)}
+                      setEditTodoId={setEditTodoId}
+                    />)
                   : !todosLng
                     ? <h3>No todos...</h3>
                     : <h3>Todos not found...</h3>
@@ -125,7 +132,7 @@ const App = () => {
               setTodoTitle={setEditTodoNewTitle}
             />
           }
-        </TodosContainer>
+        </div>
       </div>
     </TodoContext.Provider>
   )

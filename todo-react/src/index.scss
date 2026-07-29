@@ -133,6 +133,16 @@ ol {
             text-decoration: 1px line-through rgba(0,0,0,.75);
           }
         }
+
+        &.fav-todo {
+          border: 1px solid gold;
+
+          svg.fav {
+            fill: gold;
+          }
+        }
+
+        svg.fav { fill: black; }
       }
     }
 
