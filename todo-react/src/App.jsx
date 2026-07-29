@@ -78,11 +78,11 @@ const App = () => {
   }
 
   const todosLng = todos.length;
-  const todosForRender = (
+  const todosForRender = [...(
     searchTxt.trim()
       ? todos.filter(todo => todo.title.toLowerCase().includes(searchTxt))
       : todos
-  ).sort((a,b) => +b.isFav - +a.isFav);
+  )].sort((a,b) => +!!b.isFav - +!!a.isFav);
 
   const firstIncompleteTodoId = todos.find(todo => !todo.isDone)?.id;
 
