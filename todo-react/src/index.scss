@@ -1,0 +1,153 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  user-select: none;
+  color: black;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+.todo-wrap {
+  width: min(95%, 1440px);
+  height: max-content;
+  margin: 50px auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+  border-radius: 3px;
+
+  input:not([type='checkbox']) {
+    width: 100%;
+    border-radius: 7px;
+    padding-inline: 10px;
+    height: 30px;
+    background-color: transparent;
+    font-size: 16px;
+    border: 1px solid silver;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+
+    &:focus {
+      border: 1px solid black;
+    }
+
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .button {
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid silver;
+    background-color: black;
+    color: white;
+    transition: color .2s, background-color .2s;
+    cursor: pointer;
+
+    &:hover {
+      color: black;
+      background-color: white;
+    }
+  }
+
+  .add-todo-form {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .todos-info {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+
+    button {
+      font-size: 14px;
+    }
+  }
+
+  .todos-container {
+    height: max-content;
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      li {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        justify-content: start;
+        align-items: center;
+        position: relative;
+        height: max-content;
+        border-radius: 3px;
+
+        background-color: transparent;
+        box-shadow: 0 0 5px 1px rgba(0, 0, 0, .2);
+        padding: 5px 10px;
+
+        font-size: 18px;
+
+        input[type='checkbox'] {
+          height: 22px;
+          aspect-ratio: 1;
+        }
+
+        p {
+          position: absolute;
+          top: auto;
+          right: 10px;
+          text-wrap: wrap;
+        }
+
+        button {
+          background-color: transparent;
+          cursor: pointer;
+
+          svg {
+            height: 20px;
+            width: 20px;
+            background-color: transparent;
+          }
+        }
+
+        &.is-done-todo {
+          box-shadow: 0 0 2px 1px rgba(0, 255, 0, 0.35);
+
+          p {
+            text-decoration: 1px line-through rgba(0,0,0,.75);
+          }
+        }
+      }
+    }
+
+    .edit-todo-window {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 5px;
+      align-items: center;
+
+      button.edit-todo-btn {
+        width: 100%;
+        padding-block: 5px;
+      }
+    }
+  }
+}
