@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 const Button = (props) => {
   const {
     children,
@@ -10,4 +12,4 @@ const Button = (props) => {
   )
 }
 
-export default Button;
+export default memo(Button);

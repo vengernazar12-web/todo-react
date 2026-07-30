@@ -28,4 +28,4 @@ const AddTodoForm = (props) => {
   );
 }
 
-export default memo(AddTodoForm);
+export default AddTodoForm;

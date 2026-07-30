@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 const Input = (props) => {
   const {
     className = '',
@@ -26,4 +28,4 @@ const Input = (props) => {
   )
 }
 
-export default Input;
+export default memo(Input);

@@ -1,4 +1,4 @@
-import { useReducer, useRef, useState, useEffect } from 'react';
+import { useReducer, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import './index.scss';
 import TodoContext from './Todo context';
 
@@ -42,7 +42,7 @@ const App = () => {
 
   const [newTodoId, setNewTodoId] = useState(null);
 
-  const [ deletedTodoId, setDeletedTodoId ] = useState(null);
+  const [deletedTodoId, setDeletedTodoId] = useState(null);
 
   const [todos, dispatchTodos] = useReducer(todosActions, savedTodos);
 
@@ -59,7 +59,7 @@ const App = () => {
 
   const firstIncompleteTodoRef = useRef(null);
 
-  const onAddTodo = (e) => {
+  const onAddTodo = useCallback((e) => {
     e.preventDefault();
 
     if (!newTodoTitle.trim()) return;
@@ -75,9 +75,9 @@ const App = () => {
     setNewTodoId(uniqueId);
 
     setNewTodoTitle('');
-  }
+  }, [newTodoTitle]);
 
-  const onConfirmEditTodo = (e) => {
+  const onConfirmEditTodo = useCallback((e) => {
     e.preventDefault();
 
     if (!editTodoNewTitle.trim()) return;
@@ -85,7 +85,7 @@ const App = () => {
     dispatchTodos({ type: 'EDIT', id: editTodoId, title: editTodoNewTitle })
     setEditTodoId(null);
     setEditTodoNewTitle('');
-  }
+  }, [editTodoNewTitle, editTodoId]);
 
   const onChangePriority = (id, initPriority) => {
     const targetPriority =
@@ -104,12 +104,12 @@ const App = () => {
   const [deletedTodosIds, setDeletedTodosIds] = useState([]);
 
   const onDeleteFn = (id) => {
-    setDeletedTodosIds(prev => [ ...prev, id ]);
+    setDeletedTodosIds(prev => [...prev, id]);
 
     clearTimeout(timerForRerenderAfterDeleteTodo.current);
     timerForRerenderAfterDeleteTodo.current = setTimeout(() => {
       setDeletedTodosIds(prev => {
-        for(const id of prev) dispatchTodos({ type: 'DELETE', id });
+        for (const id of prev) dispatchTodos({ type: 'DELETE', id });
         return [];
       });
     }, 500);
@@ -133,11 +133,12 @@ const App = () => {
   }
 
   const todosLng = todos.length;
-  const todosForRender = (
+  const todosForRender = useMemo(() => [...(
     searchTxt.trim()
       ? todos.filter(todo => todo.title.toLowerCase().includes(searchTxt.trim().toLowerCase()))
       : todos
-  ).sort((a, b) => +!!b.isFav - +!!a.isFav);
+  )].sort((a, b) => +!!b.isFav - +!!a.isFav)
+    , [todos, searchTxt]);
 
   const firstIncompleteTodoId = todos.find(todo => !todo.isDone)?.id;
 
