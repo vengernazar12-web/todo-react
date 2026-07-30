@@ -6,7 +6,9 @@ const TodoItem = (props) => {
   const {
     firstIncompleteTodoRef,
     setEditTodoNewTitle,
-    dispatchTodos
+    dispatchTodos,
+    onChangePriority,
+    prioritiesColors
   } = useContext(TodoContext);
 
   const {
@@ -18,15 +20,17 @@ const TodoItem = (props) => {
     isFirstIncomplete,
 
     setEditTodoId,
-    className
+    className,
+    priority
   } = props;
 
   return (
-    <li className={`${checked && 'is-done-todo' || null} ${className}`} ref={isFirstIncomplete ? firstIncompleteTodoRef : null}>
+    <li style={{ borderLeft: `${priority ? '5px' : '0'} solid ${prioritiesColors[priority] || 'transparent'}` }} className={`${checked && 'is-done-todo' || null} ${className}`} ref={isFirstIncomplete ? firstIncompleteTodoRef : null}>
       <Input checked={checked} onChange={switchComplete} type='checkbox' />
-      <button onClick={onDelete}><svg><use href='#delete'></use></svg></button>
-      <button onClick={() => {setEditTodoNewTitle(title); setEditTodoId(id)}}><svg><use href='#edit'></use></svg></button>
-      <button onClick={() => dispatchTodos({ type: 'SWITCH_FAVORITE', id })}><svg className='fav'><use href='#fav'></use></svg></button>
+      <button onClick={onDelete}><svg><use href='#delete'></use></svg></button> {/* Delete button */}
+      <button onClick={() => {setEditTodoNewTitle(title); setEditTodoId(id)}}><svg><use href='#edit'></use></svg></button> {/* Edit button */}
+      <button className="priority" onClick={() => {onChangePriority(id, priority)}}><svg><use href='#priority'></use></svg></button> {/* Change priority button */}
+      <button onClick={() => dispatchTodos({ type: 'SWITCH_FAVORITE', id })}><svg className='fav'><use href='#fav'></use></svg></button> {/* Switch favorite button */}
       <p dangerouslySetInnerHTML={{ __html: title }}/>
     </li>
   )

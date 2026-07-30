@@ -8,6 +8,7 @@ const Input = (props) => {
     checked = false,
     onChange = null,
     limit = 0,
+    name = undefined
   } = props;
 
   return (
@@ -20,6 +21,7 @@ const Input = (props) => {
       onInput={onInput}
       onChange={onChange}
       maxLength={limit || undefined}
+      name={name}
     />
   )
 }

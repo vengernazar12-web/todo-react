@@ -11,17 +11,24 @@ import EditTodoWindow from './components/EditTodoWindow';
 import replaceHtmlSymbols from './replaceHtmlSymbols';
 
 const todosActions = (state, action) => {
-  const { type, id, title } = action;
+  const { type, id, title, priority } = action;
 
   switch (type) {
     case 'ADD': { return [...state, { id, title }]; };
     case 'DELETE': { return state.filter(todo => todo.id !== id); };
     case 'DELETE_ALL': { return []; };
     case 'SWITCH_COMPLETE_TODO': { return state.map(todo => todo.id === id ? { ...todo, isDone: !todo.isDone } : todo) };
-    case 'EDIT': { return state.map(todo => todo.id === id ? { ...todo, title } : todo) }
-    case 'SWITCH_FAVORITE': { return state.map(todo => todo.id === id ? { ...todo, isFav: !todo.isFav } : todo) }
+    case 'EDIT': { return state.map(todo => todo.id === id ? { ...todo, title } : todo) };
+    case 'SWITCH_FAVORITE': { return state.map(todo => todo.id === id ? { ...todo, isFav: !todo.isFav } : todo) };
+    case 'CHANGE_PRIORITY': { return state.map(todo => todo.id === id ? { ...todo, priority } : todo) };
     default: return state;
   }
+}
+
+const prioritiesColors = {
+  'low': 'green',
+  'medium': 'orange',
+  'high': 'red',
 }
 
 const savedTodos = JSON.parse(localStorage.getItem('todos') || "[]");
@@ -65,6 +72,19 @@ const App = () => {
     setEditTodoNewTitle('');
   }
 
+  const onChangePriority = (id, initPriority) => {
+    const targetPriority =
+      !initPriority
+        ? 'low'
+        : initPriority === 'low'
+          ? 'medium'
+          : initPriority === 'medium'
+            ? 'high'
+            : undefined;
+
+    dispatchTodos({ type: 'CHANGE_PRIORITY', id, priority: targetPriority });
+  }
+
   const valueForContext = {
     todos,
     dispatchTodos,
@@ -75,7 +95,9 @@ const App = () => {
     firstIncompleteTodoRef,
     setEditTodoId,
     onConfirmEditTodo,
-    setEditTodoNewTitle
+    setEditTodoNewTitle,
+    onChangePriority,
+    prioritiesColors
   }
 
   const todosLng = todos.length;
@@ -125,6 +147,7 @@ const App = () => {
                       checked={todo.isDone ?? false}
                       isFirstIncomplete={!!(firstIncompleteTodoId && todo.id === firstIncompleteTodoId)}
                       setEditTodoId={setEditTodoId}
+                      priority={todo.priority}
                     />)
                   : !todosLng
                     ? <h3>No todos...</h3>
