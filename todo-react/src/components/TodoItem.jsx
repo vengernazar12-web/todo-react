@@ -27,7 +27,7 @@ const TodoItem = (props) => {
       <button onClick={onDelete}><svg><use href='#delete'></use></svg></button>
       <button onClick={() => {setEditTodoNewTitle(title); setEditTodoId(id)}}><svg><use href='#edit'></use></svg></button>
       <button onClick={() => dispatchTodos({ type: 'SWITCH_FAVORITE', id })}><svg className='fav'><use href='#fav'></use></svg></button>
-      <p>{title}</p>
+      <p dangerouslySetInnerHTML={{ __html: title }}/>
     </li>
   )
 }

@@ -8,6 +8,7 @@ import Button from './components/Button';
 import TodoItem from './components/TodoItem';
 import TodosInfo from './components/TodosInfo';
 import EditTodoWindow from './components/EditTodoWindow';
+import replaceHtmlSymbols from './replaceHtmlSymbols';
 
 const todosActions = (state, action) => {
   const { type, id, title } = action;
@@ -78,11 +79,11 @@ const App = () => {
   }
 
   const todosLng = todos.length;
-  const todosForRender = [...(
+  const todosForRender = (
     searchTxt.trim()
-      ? todos.filter(todo => todo.title.toLowerCase().includes(searchTxt))
+      ? todos.filter(todo => todo.title.toLowerCase().includes(searchTxt.trim().toLowerCase()))
       : todos
-  )].sort((a,b) => +!!b.isFav - +!!a.isFav);
+  ).sort((a, b) => +!!b.isFav - +!!a.isFav);
 
   const firstIncompleteTodoId = todos.find(todo => !todo.isDone)?.id;
 
@@ -94,7 +95,7 @@ const App = () => {
         <Input
           placeholder='Search todos...'
           className="search-todo-input"
-          onInput={(e) => setSearchTxt(e.target.value.trim())}
+          onInput={(e) => setSearchTxt(e.target.value)}
           value={searchTxt}
           limit={20}
         />
@@ -113,7 +114,11 @@ const App = () => {
                   ? todosForRender.map(todo =>
                     <TodoItem key={todo.id}
                       className={todo.isFav ? 'fav-todo' : ''}
-                      title={todo.title}
+                      title={
+                        searchTxt.trim()
+                          ? replaceHtmlSymbols(todo.title).replace(new RegExp(searchTxt.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '<mark>$&</mark>')
+                          : replaceHtmlSymbols(todo.title)
+                      }
                       onDelete={() => dispatchTodos({ type: 'DELETE', id: todo.id })}
                       id={todo.id}
                       switchComplete={() => dispatchTodos({ type: 'SWITCH_COMPLETE_TODO', id: todo.id })}
