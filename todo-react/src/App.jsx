@@ -14,7 +14,7 @@ const todosActions = (state, action) => {
   const { type, id, title, priority } = action;
 
   switch (type) {
-    case 'ADD': { return [...state, { id, title }]; };
+    case 'ADD': { return [...state, { id, title, isNew: true }]; };
     case 'DELETE': { return state.filter(todo => todo.id !== id); };
     case 'DELETE_ALL': { return []; };
     case 'SWITCH_COMPLETE_TODO': { return state.map(todo => todo.id === id ? { ...todo, isDone: !todo.isDone } : todo) };
@@ -40,10 +40,21 @@ const App = () => {
   const [editTodoId, setEditTodoId] = useState(null);
   const [editTodoNewTitle, setEditTodoNewTitle] = useState('');
 
+  const [newTodoId, setNewTodoId] = useState(null);
+
+  const [ deletedTodoId, setDeletedTodoId ] = useState(null);
+
   const [todos, dispatchTodos] = useReducer(todosActions, savedTodos);
 
+  const timerForRerenderAfterAddNewTodo = useRef(null);
+
   useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
+    localStorage.setItem('todos', JSON.stringify(todos.map(todo => { if (todo.isNew) delete todo.isNew; return todo })));
+
+    if (newTodoId) {
+      clearTimeout(timerForRerenderAfterAddNewTodo.current);
+      timerForRerenderAfterAddNewTodo.current = setTimeout(() => setNewTodoId(null), 500);
+    }
   }, [todos]);
 
   const firstIncompleteTodoRef = useRef(null);
@@ -53,11 +64,15 @@ const App = () => {
 
     if (!newTodoTitle.trim()) return;
 
+    const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+
     dispatchTodos({
       type: 'ADD',
-      id: crypto?.randomUUID() ?? Date.now().toString(),
+      id: uniqueId,
       title: newTodoTitle
-    })
+    });
+
+    setNewTodoId(uniqueId);
 
     setNewTodoTitle('');
   }
@@ -85,6 +100,21 @@ const App = () => {
     dispatchTodos({ type: 'CHANGE_PRIORITY', id, priority: targetPriority });
   }
 
+  const timerForRerenderAfterDeleteTodo = useRef(null);
+  const [deletedTodosIds, setDeletedTodosIds] = useState([]);
+
+  const onDeleteFn = (id) => {
+    setDeletedTodosIds(prev => [ ...prev, id ]);
+
+    clearTimeout(timerForRerenderAfterDeleteTodo.current);
+    timerForRerenderAfterDeleteTodo.current = setTimeout(() => {
+      setDeletedTodosIds(prev => {
+        for(const id of prev) dispatchTodos({ type: 'DELETE', id });
+        return [];
+      });
+    }, 500);
+  }
+
   const valueForContext = {
     todos,
     dispatchTodos,
@@ -97,7 +127,9 @@ const App = () => {
     onConfirmEditTodo,
     setEditTodoNewTitle,
     onChangePriority,
-    prioritiesColors
+    prioritiesColors,
+    deletedTodosIds,
+    setDeletedTodosIds
   }
 
   const todosLng = todos.length;
@@ -135,20 +167,21 @@ const App = () => {
                 todosForRender.length
                   ? todosForRender.map(todo =>
                     <TodoItem key={todo.id}
-                      className={todo.isFav ? 'fav-todo' : ''}
+                      className={`${todo.isFav ? 'fav-todo' : ''} ${newTodoId === todo.id ? 'is-new' : ''} ${deletedTodosIds.includes(todo.id) ? 'deleted-todo' : ''}`}
                       title={
                         searchTxt.trim()
                           ? replaceHtmlSymbols(todo.title).replace(new RegExp(searchTxt.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '<mark>$&</mark>')
                           : replaceHtmlSymbols(todo.title)
                       }
-                      onDelete={() => dispatchTodos({ type: 'DELETE', id: todo.id })}
+                      onDelete={() => onDeleteFn(todo.id)}
                       id={todo.id}
                       switchComplete={() => dispatchTodos({ type: 'SWITCH_COMPLETE_TODO', id: todo.id })}
                       checked={todo.isDone ?? false}
                       isFirstIncomplete={!!(firstIncompleteTodoId && todo.id === firstIncompleteTodoId)}
                       setEditTodoId={setEditTodoId}
                       priority={todo.priority}
-                    />)
+                    />
+                  )
                   : !todosLng
                     ? <h3>No todos...</h3>
                     : <h3>Todos not found...</h3>
