@@ -1,20 +1,36 @@
 import Button from "./Button";
-import { useContext, memo } from "react";
+import { useContext, memo, useState, useCallback } from "react";
 import TodoContext from "../Todo context";
 import Input from "./Input";
 
 const AddTodoForm = (props) => {
+  const [newTodoTitle, setNewTodoTitle] = useState('');
+
   const {
-    newTodoTitle,
-    setNewTodoTitle
+    dispatchTodos,
+    setNewTodoId
   } = useContext(TodoContext);
 
-  const {
-    onSubmit
-  } = props;
+  const onAddTodo = useCallback((e) => {
+    e.preventDefault();
+
+    if (!newTodoTitle.trim()) return;
+
+    const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+
+    dispatchTodos({
+      type: 'ADD',
+      id: uniqueId,
+      title: newTodoTitle
+    });
+
+    setNewTodoId(uniqueId);
+
+    setNewTodoTitle('');
+  }, [newTodoTitle]);
 
   return (
-    <form className="add-todo-form" onSubmit={onSubmit}>
+    <form className="add-todo-form" onSubmit={onAddTodo}>
       <Input
         type="text"
         placeholder="Todo title..."
@@ -23,7 +39,7 @@ const AddTodoForm = (props) => {
         onInput={(e) => { setNewTodoTitle(e.target.value) }}
         limit={20}
       />
-      <Button className="add-todo-btn" onClick={onSubmit}>ADD</Button>
+      <Button className="add-todo-btn" onClick={onAddTodo}>ADD</Button>
     </form>
   );
 }

@@ -9,6 +9,7 @@ const TodoItem = (props) => {
     dispatchTodos,
     onChangePriority,
     prioritiesColors,
+    newTodoId
   } = useContext(TodoContext);
 
   const {
@@ -27,16 +28,16 @@ const TodoItem = (props) => {
   const priorityColor = prioritiesColors[priority];
 
   return (
-    <li style={{ borderLeft: `${priority ? '5px' : '0'} solid ${priorityColor || 'transparent'}` }} className={`${checked && 'is-done-todo' || ''} ${className}`} ref={isFirstIncomplete ? firstIncompleteTodoRef : null}>
+    <li aria-label="Todo block" style={{ borderLeft: `${priority ? '5px' : '0'} solid ${priorityColor || 'transparent'}` }} className={`${checked && 'is-done-todo' || ''} ${className}`} ref={isFirstIncomplete ? firstIncompleteTodoRef : null}>
       <Input checked={checked} onChange={switchComplete} type='checkbox' />
 
-      <button onClick={onDelete}><svg><use href='#delete'></use></svg></button> {/* Delete button */}
+      <button aria-label="Delete todo" onClick={onDelete}><svg><use href='#delete'></use></svg></button> {/* Delete button */}
 
-      <button onClick={() => {setEditTodoNewTitle(title); setEditTodoId(id)}}><svg><use href='#edit'></use></svg></button> {/* Edit button */}
+      <button aria-label="Edit todo" onClick={() => {setEditTodoNewTitle(title); setEditTodoId(id)}}><svg><use href='#edit'></use></svg></button> {/* Edit button */}
 
-      <button className="priority" onClick={() => {onChangePriority(id, priority)}}><svg style={{ stroke: priorityColor || 'black' }}><use href='#priority'></use></svg></button> {/* Change priority button */}
+      <button aria-label="Change priority" className="priority" onClick={() => {onChangePriority(id, priority)}}><svg style={{ stroke: priorityColor || 'black' }}><use href='#priority'></use></svg></button> {/* Change priority button */}
 
-      <button onClick={() => dispatchTodos({ type: 'SWITCH_FAVORITE', id })}><svg className='fav'><use href='#fav'></use></svg></button> {/* Switch favorite button */}
+      <button aria-label="Switch favorite todo" onClick={() => dispatchTodos({ type: 'SWITCH_FAVORITE', id })}><svg className='fav'><use href='#fav'></use></svg></button> {/* Switch favorite button */}
 
       <p dangerouslySetInnerHTML={{ __html: title }}/>
     </li>

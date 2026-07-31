@@ -9,6 +9,7 @@ import TodoItem from './components/TodoItem';
 import TodosInfo from './components/TodosInfo';
 import EditTodoWindow from './components/EditTodoWindow';
 import replaceHtmlSymbols from './replaceHtmlSymbols';
+import TodosContainer from './components/TodosContainer';
 
 const todosActions = (state, action) => {
   const { type, id, title, priority } = action;
@@ -35,7 +36,6 @@ const savedTodos = JSON.parse(localStorage.getItem('todos') || "[]");
 
 const App = () => {
   const [searchTxt, setSearchTxt] = useState('');
-  const [newTodoTitle, setNewTodoTitle] = useState('');
 
   const [editTodoId, setEditTodoId] = useState(null);
   const [editTodoNewTitle, setEditTodoNewTitle] = useState('');
@@ -58,24 +58,6 @@ const App = () => {
   }, [todos]);
 
   const firstIncompleteTodoRef = useRef(null);
-
-  const onAddTodo = useCallback((e) => {
-    e.preventDefault();
-
-    if (!newTodoTitle.trim()) return;
-
-    const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
-
-    dispatchTodos({
-      type: 'ADD',
-      id: uniqueId,
-      title: newTodoTitle
-    });
-
-    setNewTodoId(uniqueId);
-
-    setNewTodoTitle('');
-  }, [newTodoTitle]);
 
   const onConfirmEditTodo = useCallback((e) => {
     e.preventDefault();
@@ -115,11 +97,25 @@ const App = () => {
     }, 500);
   }
 
-  const valueForContext = {
+  const valueForContext = useMemo(() => {
+    return {
+      todos,
+      dispatchTodos,
+      searchTxt,
+      setSearchTxt,
+      firstIncompleteTodoRef,
+      setEditTodoId,
+      onConfirmEditTodo,
+      setEditTodoNewTitle,
+      onChangePriority,
+      prioritiesColors,
+      deletedTodosIds,
+      setDeletedTodosIds,
+      setNewTodoId
+    }
+  }, [
     todos,
     dispatchTodos,
-    newTodoTitle,
-    setNewTodoTitle,
     searchTxt,
     setSearchTxt,
     firstIncompleteTodoRef,
@@ -129,8 +125,9 @@ const App = () => {
     onChangePriority,
     prioritiesColors,
     deletedTodosIds,
-    setDeletedTodosIds
-  }
+    setDeletedTodosIds,
+    setNewTodoId
+  ]);
 
   const todosLng = todos.length;
   const todosForRender = useMemo(() => [...(
@@ -145,7 +142,7 @@ const App = () => {
   return (
     <TodoContext.Provider value={valueForContext}>
       <div className="todo-wrap">
-        <AddTodoForm onSubmit={onAddTodo} />
+        <AddTodoForm />
 
         <Input
           placeholder='Search todos...'
@@ -161,9 +158,9 @@ const App = () => {
           if (confirm('Delete all todos?')) dispatchTodos({ type: 'DELETE_ALL' });
         }}>DELETE ALL</Button>
 
-        <div className="todos-container">
+        <TodosContainer className="todos-container">
           {!editTodoId
-            ? <ul>
+            ? <ul aria-label="Todo list">
               {
                 todosForRender.length
                   ? todosForRender.map(todo =>
@@ -194,7 +191,7 @@ const App = () => {
               setTodoTitle={setEditTodoNewTitle}
             />
           }
-        </div>
+        </TodosContainer>
       </div>
     </TodoContext.Provider>
   )
