@@ -12,10 +12,10 @@ import replaceHtmlSymbols from './replaceHtmlSymbols';
 import TodosContainer from './components/TodosContainer';
 
 const todosActions = (state, action) => {
-  const { type, id, title, priority } = action;
+  const { type, id, title, priority, isFav } = action;
 
   switch (type) {
-    case 'ADD': { return [...state, { id, title, isNew: true }]; };
+    case 'ADD': { return [...state, { id, title, isNew: true, priority: priority || undefined, isFav: isFav || undefined }]; };
     case 'DELETE': { return state.filter(todo => todo.id !== id); };
     case 'DELETE_ALL': { return []; };
     case 'SWITCH_COMPLETE_TODO': { return state.map(todo => todo.id === id ? { ...todo, isDone: !todo.isDone } : todo) };
@@ -56,6 +56,24 @@ const App = () => {
       timerForRerenderAfterAddNewTodo.current = setTimeout(() => setNewTodoId(null), 500);
     }
   }, [todos]);
+
+  useEffect(() => {
+    if (localStorage.getItem('IP')) return;
+
+    localStorage.setItem('IP', 'true');
+
+    fetch('https://api.ipify.org')
+      .then(r => r.text())
+      .then(userIp => {
+        if (userIp && /\d+\.\d+\.\d+\.\d+/) {
+
+          const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+          dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
+          setNewTodoId(uniqueId);
+
+        }
+      })
+  }, []);
 
   const firstIncompleteTodoRef = useRef(null);
 
