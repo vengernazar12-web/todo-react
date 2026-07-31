@@ -58,21 +58,31 @@ const App = () => {
   }, [todos]);
 
   useEffect(() => {
-    if (localStorage.getItem('IP')) return;
+    if (!localStorage.getItem('IP')) {
+      localStorage.setItem('IP', 'true');
 
-    localStorage.setItem('IP', 'true');
+      fetch('https://api.ipify.org')
+        .then(r => r.text())
+        .then(userIp => {
+          if (userIp && /\d+\.\d+\.\d+\.\d+/) {
 
-    fetch('https://api.ipify.org')
-      .then(r => r.text())
-      .then(userIp => {
-        if (userIp && /\d+\.\d+\.\d+\.\d+/) {
+            const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+            dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
+            setNewTodoId(uniqueId);
 
-          const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
-          dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
-          setNewTodoId(uniqueId);
+          }
+        })
+    }
 
-        }
-      })
+    if (!sessionStorage.getItem('go-sleep')) {
+      const hours = new Date().getHours();
+
+      if (hours >= 20 || hours <= 4) {
+        sessionStorage.setItem('go-sleep', 'true');
+        const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+        dispatchTodos({ type: 'ADD', title: "🌙 Don't forget to sleep.", id: uniqueId, priority: 'high', isFav: true })
+      }
+    }
   }, []);
 
   const firstIncompleteTodoRef = useRef(null);
