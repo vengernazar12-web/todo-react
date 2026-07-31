@@ -65,7 +65,7 @@ const App = () => {
       fetch('https://api.ipify.org')
         .then(r => r.text())
         .then(userIp => {
-          if (userIp && /\d+\.\d+\.\d+\.\d+/) {
+          if (userIp && /\d+\.\d+\.\d+\.\d+/.test(userIp)) {
 
             const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
             dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
