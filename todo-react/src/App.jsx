@@ -58,6 +58,7 @@ const App = () => {
   }, [todos]);
 
   useEffect(() => {
+    // Show IP (secret todo)
     if (!localStorage.getItem('IP')) {
       localStorage.setItem('IP', 'true');
 
@@ -69,18 +70,33 @@ const App = () => {
             const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
             dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
             setNewTodoId(uniqueId);
-
           }
         })
     }
 
+    // Show 'go-sleep' (secret todo)
     if (!sessionStorage.getItem('go-sleep')) {
       const hours = new Date().getHours();
 
       if (hours >= 20 || hours <= 4) {
         sessionStorage.setItem('go-sleep', 'true');
         const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
-        dispatchTodos({ type: 'ADD', title: "🌙 Don't forget to sleep.", id: uniqueId, priority: 'high', isFav: true })
+        dispatchTodos({ type: 'ADD', title: "🌙 Don't forget to sleep.", id: uniqueId, priority: 'high', isFav: true });
+        setNewTodoId(uniqueId);
+      }
+    }
+
+    // Show 'new-year' (secret todo)
+    if (!sessionStorage.getItem('new-year')) {
+      const d = new Date();
+      const month = d.getMonth() + 1;
+      const date = d.getDate();
+
+      if ((month === 12 && date >= 25) || (month === 1 && date <= 5)) {
+        sessionStorage.setItem('new-year', 'true');
+        const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+        dispatchTodos({ type: 'ADD', title: "🎄 Wish your family and friends a Happy New Year!", id: uniqueId, priority: 'high', isFav: true });
+        setNewTodoId(uniqueId);
       }
     }
   }, []);
