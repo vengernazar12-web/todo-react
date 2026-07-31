@@ -29,7 +29,8 @@ const TodoItem = (props) => {
 
   return (
     <li aria-label="Todo block" style={{ borderLeft: `${priority ? '5px' : '0'} solid ${priorityColor || 'transparent'}` }} className={`${checked && 'is-done-todo' || ''} ${className}`} ref={isFirstIncomplete ? firstIncompleteTodoRef : null}>
-      <Input checked={checked} onChange={switchComplete} type='checkbox' />
+      <label htmlFor={id} className="visually-hidden">Toggle todo state "Completed"</label>
+      <Input checked={checked} onChange={switchComplete} type='checkbox' id={id} />
 
       <button aria-label="Delete todo" onClick={onDelete}><svg><use href='#delete'></use></svg></button> {/* Delete button */}
 

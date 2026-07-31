@@ -31,6 +31,7 @@ const AddTodoForm = (props) => {
 
   return (
     <form className="add-todo-form" onSubmit={onAddTodo}>
+      <label htmlFor="todo-name" className="visually-hidden">Todo name</label>
       <Input
         type="text"
         placeholder="Todo title..."
@@ -38,6 +39,7 @@ const AddTodoForm = (props) => {
         value={newTodoTitle}
         onInput={(e) => { setNewTodoTitle(e.target.value) }}
         limit={20}
+        id="todo-name"
       />
       <Button className="add-todo-btn" onClick={onAddTodo}>ADD</Button>
     </form>

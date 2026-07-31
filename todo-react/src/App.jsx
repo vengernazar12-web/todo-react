@@ -144,12 +144,14 @@ const App = () => {
       <div className="todo-wrap">
         <AddTodoForm />
 
+        <label htmlFor="search" className="visually-hidden"></label>
         <Input
           placeholder='Search todos...'
           className="search-todo-input"
           onInput={(e) => setSearchTxt(e.target.value)}
           value={searchTxt}
           limit={20}
+          id="search"
         />
 
         <TodosInfo todos={todos} />
