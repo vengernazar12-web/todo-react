@@ -2,7 +2,7 @@ import { useReducer, useRef, useState, useEffect, useCallback, useMemo } from 'r
 import './index.scss';
 import TodoContext from './Todo context';
 
-import AddTodoForm from './components/Add-todo-form';
+import AddTodoForm from './components/AddTodoForm';
 import Input from './components/Input';
 import Button from './components/Button';
 import TodoItem from './components/TodoItem';
@@ -10,12 +10,16 @@ import TodosInfo from './components/TodosInfo';
 import EditTodoWindow from './components/EditTodoWindow';
 import replaceHtmlSymbols from './replaceHtmlSymbols';
 import TodosContainer from './components/TodosContainer';
+import ConfirmShowIpTodo from './components/ConfirmShowIpTodo';
 
 const todosActions = (state, action) => {
   const { type, id, title, priority, isFav } = action;
 
   switch (type) {
-    case 'ADD': { return [...state, { id, title, isNew: true, priority: priority || undefined, isFav: isFav || undefined }]; };
+    case 'ADD': {
+      if (!sessionStorage.getItem('session-todo-added')) sessionStorage.setItem('session-todo-added', 'true');
+      return [...state, { id, title, isNew: true, priority: priority || undefined, isFav: isFav || undefined }];
+    };
     case 'DELETE': { return state.filter(todo => todo.id !== id); };
     case 'DELETE_ALL': { return []; };
     case 'SWITCH_COMPLETE_TODO': { return state.map(todo => todo.id === id ? { ...todo, isDone: !todo.isDone } : todo) };
@@ -32,8 +36,6 @@ const prioritiesColors = {
   'high': 'red',
 }
 
-const savedTodos = JSON.parse(localStorage.getItem('todos') || "[]");
-
 const App = () => {
   const [searchTxt, setSearchTxt] = useState('');
 
@@ -44,36 +46,32 @@ const App = () => {
 
   const [deletedTodoId, setDeletedTodoId] = useState(null);
 
-  const [todos, dispatchTodos] = useReducer(todosActions, savedTodos);
+  const [todos, dispatchTodos] = useReducer(todosActions, JSON.parse(localStorage.getItem('todos') || "[]"));
 
   const timerForRerenderAfterAddNewTodo = useRef(null);
 
+  const [needShowTaskForAddIPTodo, setNeedShowTaskForAddIPTodo] = useState(false);
+  const [ showIpTodo, setShowIpTodo ] = useState(false);
+
   useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos.map(todo => { if (todo.isNew) delete todo.isNew; return todo })));
+    localStorage.setItem('todos', JSON.stringify(todos));
 
     if (newTodoId) {
       clearTimeout(timerForRerenderAfterAddNewTodo.current);
       timerForRerenderAfterAddNewTodo.current = setTimeout(() => setNewTodoId(null), 500);
     }
-  }, [todos]);
 
-  useEffect(() => {
-    // Show IP (secret todo)
-    if (!localStorage.getItem('IP')) {
-      localStorage.setItem('IP', 'true');
+    if (
+      sessionStorage.getItem('session-todo-added')
+      && !localStorage.getItem('IP')
+      && !sessionStorage.getItem('task-showed')
+    ) {
+      setNeedShowTaskForAddIPTodo(true);
+      sessionStorage.setItem('task-showed', 'true');
+    };
+  }, [todos, newTodoId]);
 
-      fetch('https://api.ipify.org')
-        .then(r => r.text())
-        .then(userIp => {
-          if (userIp && /\d+\.\d+\.\d+\.\d+/.test(userIp)) {
-
-            const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
-            dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
-            setNewTodoId(uniqueId);
-          }
-        })
-    }
-
+  useEffect(() => { // Secrets todos ( sleep, new year )
     // Show 'go-sleep' (secret todo)
     if (!sessionStorage.getItem('go-sleep')) {
       const hours = new Date().getHours();
@@ -100,6 +98,29 @@ const App = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    // Show IP (secret todo)
+    if (!localStorage.getItem('IP')) {
+      console.log(showIpTodo);
+
+      if (!showIpTodo) return;
+
+      localStorage.setItem('IP', 'true');
+
+      fetch('https://api.ipify.org')
+        .then(r => r.text())
+        .then(userIp => {
+          if (userIp && /\d+\.\d+\.\d+\.\d+/.test(userIp)) {
+
+            const uniqueId = crypto?.randomUUID() ?? Date.now().toString();
+            dispatchTodos({ type: 'ADD', title: `Hide your IP (${userIp})`, id: uniqueId, priority: 'high', isFav: true });
+            setNewTodoId(uniqueId);
+            setShowIpTodo(false);
+          }
+        })
+    }
+  }, [showIpTodo])
 
   const firstIncompleteTodoRef = useRef(null);
 
@@ -155,7 +176,9 @@ const App = () => {
       prioritiesColors,
       deletedTodosIds,
       setDeletedTodosIds,
-      setNewTodoId
+      setNewTodoId,
+      setShowIpTodo,
+      setNeedShowTaskForAddIPTodo
     }
   }, [
     todos,
@@ -170,7 +193,9 @@ const App = () => {
     prioritiesColors,
     deletedTodosIds,
     setDeletedTodosIds,
-    setNewTodoId
+    setNewTodoId,
+    setShowIpTodo,
+    setNeedShowTaskForAddIPTodo
   ]);
 
   const todosLng = todos.length;
@@ -205,37 +230,40 @@ const App = () => {
         }}>DELETE ALL</Button>
 
         <TodosContainer className="todos-container">
-          {!editTodoId
-            ? <ul aria-label="Todo list">
-              {
-                todosForRender.length
-                  ? todosForRender.map(todo =>
-                    <TodoItem key={todo.id}
-                      className={`${todo.isFav ? 'fav-todo' : ''} ${newTodoId === todo.id ? 'is-new' : ''} ${deletedTodosIds.includes(todo.id) ? 'deleted-todo' : ''}`}
-                      title={
-                        searchTxt.trim()
-                          ? replaceHtmlSymbols(todo.title).replace(new RegExp(searchTxt.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '<mark>$&</mark>')
-                          : replaceHtmlSymbols(todo.title)
-                      }
-                      onDelete={() => onDeleteFn(todo.id)}
-                      id={todo.id}
-                      switchComplete={() => dispatchTodos({ type: 'SWITCH_COMPLETE_TODO', id: todo.id })}
-                      checked={todo.isDone ?? false}
-                      isFirstIncomplete={!!(firstIncompleteTodoId && todo.id === firstIncompleteTodoId)}
-                      setEditTodoId={setEditTodoId}
-                      priority={todo.priority}
-                    />
-                  )
-                  : !todosLng
-                    ? <h3>No todos...</h3>
-                    : <h3>Todos not found...</h3>
-              }
-            </ul>
-            : <EditTodoWindow
-              todoId={editTodoId}
-              todoTitle={editTodoNewTitle}
-              setTodoTitle={setEditTodoNewTitle}
-            />
+          {
+            needShowTaskForAddIPTodo
+              ? <ConfirmShowIpTodo />
+              : !editTodoId
+                ? <ul aria-label="Todo list">
+                  {
+                    todosForRender.length
+                      ? todosForRender.map(todo =>
+                        <TodoItem key={todo.id}
+                          className={`${todo.isFav ? 'fav-todo' : ''} ${newTodoId === todo.id ? 'is-new' : ''} ${deletedTodosIds.includes(todo.id) ? 'deleted-todo' : ''}`}
+                          title={
+                            searchTxt.trim()
+                              ? replaceHtmlSymbols(todo.title).replace(new RegExp(searchTxt.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '<mark>$&</mark>')
+                              : replaceHtmlSymbols(todo.title)
+                          }
+                          onDelete={() => onDeleteFn(todo.id)}
+                          id={todo.id}
+                          switchComplete={() => dispatchTodos({ type: 'SWITCH_COMPLETE_TODO', id: todo.id })}
+                          checked={todo.isDone ?? false}
+                          isFirstIncomplete={!!(firstIncompleteTodoId && todo.id === firstIncompleteTodoId)}
+                          setEditTodoId={setEditTodoId}
+                          priority={todo.priority}
+                        />
+                      )
+                      : !todosLng
+                        ? <h3>No todos...</h3>
+                        : <h3>Todos not found...</h3>
+                  }
+                </ul>
+                : <EditTodoWindow
+                  todoId={editTodoId}
+                  todoTitle={editTodoNewTitle}
+                  setTodoTitle={setEditTodoNewTitle}
+                />
           }
         </TodosContainer>
       </div>
