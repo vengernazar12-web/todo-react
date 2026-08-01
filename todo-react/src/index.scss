@@ -130,7 +130,7 @@ ol {
           box-shadow: 0 0 2px 1px rgba(0, 255, 0, 0.35);
 
           p {
-            text-decoration: 1px line-through rgba(0,0,0,.75);
+            text-decoration: 1px line-through rgba(0, 0, 0, .75);
           }
         }
 
@@ -150,7 +150,9 @@ ol {
           animation: todo-anim .5s reverse forwards;
         }
 
-        svg.fav { fill: black; }
+        svg.fav {
+          fill: black;
+        }
       }
     }
 
@@ -167,12 +169,53 @@ ol {
         padding-block: 5px;
       }
     }
+
+    .secret-todo-task-window {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 5px;
+      align-items: center;
+
+      button {
+        width: 100%;
+        padding-block: 5px;
+
+        &.confirm {
+          background-color: green;
+          color: white;
+
+          &:hover {
+            background-color: white;
+            color: green;
+          }
+        }
+
+        &.cancel {
+          background-color: red;
+          color: white;
+
+          &:hover {
+            background-color: white;
+            color: red;
+          }
+        }
+      }
+    }
   }
 }
 
 @keyframes todo-anim {
-  from { transform: translateX(-25%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-25%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .visually-hidden {

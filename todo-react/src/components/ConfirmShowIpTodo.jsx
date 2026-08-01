@@ -10,10 +10,10 @@ const ConfirmShowIpTodo = () => {
   } = useContext(TodoContext);
 
   return (
-    <div>
+    <div className="secret-todo-task-window">
       <h2>🎁 Secret feature</h2>
       <p>This app has a hidden todo.</p>
-      <Button className='confirm-unlock' onClick={() => {setNeedShowTaskForAddIPTodo(false); setShowIpTodo(true)}}>Confirm</Button>
+      <Button className='confirm' onClick={() => {setNeedShowTaskForAddIPTodo(false); setShowIpTodo(true)}}>Confirm</Button>
       <Button className='cancel' onClick={() => {setNeedShowTaskForAddIPTodo(false); setShowIpTodo(false)}}>Cancel</Button>
     </div>
   )
